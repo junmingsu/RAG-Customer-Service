@@ -11,7 +11,7 @@ class ChatService:
         self.llm = ChatGoogleGenerativeAI(
             model="models/gemini-flash-latest",
             google_api_key=os.getenv("GOOGLE_API_KEY"),
-            temperature=0.7
+            temperature=0.7,
             convert_system_message_to_human=True 
         )
         
