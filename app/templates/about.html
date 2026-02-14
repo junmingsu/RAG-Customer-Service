@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>關於系統</h1>
+<p style="margin-top: 1rem; line-height: 1.8;">
+    這是一個基於 RAG（檢索增強生成）技術的通用智能客服系統。<br>
+    可應用於任何領域，只需更換知識庫文件即可。
+</p>
+
+<h2 style="margin-top: 2rem;">技術架構</h2>
+<ul style="margin-top: 1rem; line-height: 2;">
+    <li>表現層：Jinja2 模板 + HTML/CSS/JS</li>
+    <li>控制層：Flask Blueprint</li>
+    <li>服務層：RAG 檢索與 AI 推論</li>
+    <li>資料層：ChromaDB 向量資料庫</li>
+</ul>
+
+<h2 style="margin-top: 2rem;">應用場景</h2>
+<ul style="margin-top: 1rem; line-height: 2;">
+    <li>長照政策諮詢</li>
+    <li>電商客服系統</li>
+    <li>金融產品說明</li>
+    <li>醫療衛教資訊</li>
+    <li>...任何需要知識問答的領域</li>
+</ul>
+{% endblock %}

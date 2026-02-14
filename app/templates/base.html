@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RAG 智能客服{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        nav {
+            background: #2c3e50;
+            padding: 1rem;
+            color: white;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+        nav a:hover { text-decoration: underline; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <nav>
+        <a href="/">首頁</a>
+        <a href="/chat/">智能客服</a>
+        <a href="/about">關於</a>
+		<a href="/admin/monitor">系統監控</a>
+    </nav>
+    
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

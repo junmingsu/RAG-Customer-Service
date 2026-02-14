@@ -1,0 +1,26 @@
+完成RAG建立，主要做了一下修正，你參考下:
+
+
+(1)
+將LangChain與其他相關的 LangChain 套件都更新到最新版
+pip install -U langchain-google-genai google-generativeai
+pip install -U langchain langchain-community langchain-text-splitters
+
+(2)
+將from langchain.text_splitter import RecursiveCharacterTextSplitter
+改成from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+(3)
+將rag_store_service.py中的以下內容改成如下:
+
+self.embeddings = GoogleGenerativeAIEmbeddings(
+            model="models/gemini-embedding-001",
+            google_api_key=os.getenv("GOOGLE_API_KEY"),
+            task_type="retrieval_document"      # 建議加入: 明確指定任務類型以提升精準度
+        )
+
+(4) 如上傳的檔案:
+做了一個test_api.py用來測試API的正確性。
+
+
+

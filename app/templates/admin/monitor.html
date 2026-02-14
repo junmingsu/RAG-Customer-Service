@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}系統監控{% endblock %}
+
+{% block styles %}
+<style>
+    .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        font-size: 1.1rem;
+    }
+    .metric {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #3498db;
+    }
+    .label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    .progress-bar {
+        background: #ecf0f1;
+        height: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    .progress-fill {
+        background: #3498db;
+        height: 100%;
+        transition: width 0.3s;
+    }
+    .status {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .status.ok { background: #d4edda; color: #155724; }
+    .status.warning { background: #fff3cd; color: #856404; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>📊 系統監控儀表板</h1>
+
+<div class="dashboard" id="dashboard">
+    <div class="card">
+        <h3>🤖 Gemini API</h3>
+        <div class="metric" id="geminiUsage">-</div>
+        <div class="label">今日使用次數</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="geminiProgress"></div>
+        </div>
+        <div class="label" id="geminiLimit">/ 1,500 次</div>
+    </div>
+    
+    <div class="card">
+        <h3>📦 向量資料庫</h3>
+        <div class="metric" id="vectorSize">-</div>
+        <div class="label">資料庫大小 (KB)</div>
+        <span class="status ok" id="vectorStatus">正常</span>
+    </div>
+    
+    <div class="card">
+        <h3>💬 總呼叫次數</h3>
+        <div class="metric" id="totalUsage">-</div>
+        <div class="label">今日 API 總用量</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>⚙️ 系統資訊</h3>
+    <p>向量庫路徑：<code>instance/vectorstore/</code></p>
+    <p>API 監控檔案：<code>instance/api_usage.json</code></p>
+    <p>重新整理頻率：每 5 秒</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function updateMonitor() {
+    try {
+        const response = await fetch('/admin/api/usage');
+        const data = await response.json();
+        
+        // Gemini 使用量
+        const geminiUsage = data.usage.gemini || 0;
+        const geminiLimit = data.limits.gemini_daily;
+        const geminiPercent = (geminiUsage / geminiLimit) * 100;
+        
+        document.getElementById('geminiUsage').textContent = geminiUsage;
+        document.getElementById('geminiProgress').style.width = geminiPercent + '%';
+        document.getElementById('geminiLimit').textContent = `/ ${geminiLimit} 次 (${geminiPercent.toFixed(1)}%)`;
+        
+        // 向量庫
+        if (data.vectorstore.exists) {
+            document.getElementById('vectorSize').textContent = data.vectorstore.size_kb.toFixed(2);
+            document.getElementById('vectorStatus').textContent = '正常';
+            document.getElementById('vectorStatus').className = 'status ok';
+        } else {
+            document.getElementById('vectorSize').textContent = '未建立';
+            document.getElementById('vectorStatus').textContent = '尚未初始化';
+            document.getElementById('vectorStatus').className = 'status warning';
+        }
+        
+        // 總用量
+        document.getElementById('totalUsage').textContent = data.usage.total || 0;
+        
+    } catch (error) {
+        console.error('更新監控失敗:', error);
+    }
+}
+
+// 初次載入
+updateMonitor();
+
+// 每 5 秒更新
+setInterval(updateMonitor, 5000);
+</script>
+{% endblock %}
