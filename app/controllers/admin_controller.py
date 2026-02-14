@@ -37,7 +37,7 @@ def get_usage():
         }
     })
 
-@admin_bp.route('/init-knowledge', methods=['POST'])
+@admin_bp.route('/init-knowledge', methods=['GET', 'POST'])
 def init_knowledge():
     """手動初始化知識庫"""
     try:
