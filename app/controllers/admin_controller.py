@@ -36,3 +36,30 @@ def get_usage():
             "embeddings_per_min": 1500
         }
     })
+
+@admin_bp.route('/init-knowledge', methods=['POST'])
+def init_knowledge():
+    """手動初始化知識庫"""
+    try:
+        from app.services.knowledge_service import KnowledgeService
+        from config import Config
+        
+        results = {}
+        
+        for domain_key, domain_config in Config.KNOWLEDGE_DOMAINS.items():
+            try:
+                knowledge_service = KnowledgeService(domain=domain_key)
+                success = knowledge_service.initialize_knowledge_base(
+                    pdf_directory=domain_config['pdf_dir'],
+                    force_rebuild=True
+                )
+                results[domain_key] = 'success' if success else 'failed'
+            except Exception as e:
+                results[domain_key] = f'error: {str(e)}'
+        
+        return jsonify({
+            'status': 'completed',
+            'results': results
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
