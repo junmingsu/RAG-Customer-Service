@@ -11,8 +11,8 @@ class ChatService:
         self.llm = ChatGoogleGenerativeAI(
             model="models/gemini-flash-latest",
             google_api_key=os.getenv("GOOGLE_API_KEY"),
-            temperature=0.7
-            convert_system_message_to_human=True 
+            temperature=0.7,
+            convert_system_message_to_human=True
         )
         
         self.knowledge_services = {}
@@ -56,8 +56,6 @@ class ChatService:
         ])
         
         self.chain = self.prompt | self.llm | StrOutputParser()
-        
-        # 改用多層結構：chat_histories[session_id][domain] = []
         self.chat_histories = {}
     
     def switch_domain(self, domain):
@@ -70,6 +68,13 @@ class ChatService:
         return True
     
     def _get_knowledge_service(self, domain):
+        """取得或建立知識服務（單一領域，釋放其他）"""
+        
+        # 如果已經載入其他領域，先清除以節省記憶體
+        if self.knowledge_services and domain not in self.knowledge_services:
+            print(f"⚠️ 清除其他領域以節省記憶體")
+            self.knowledge_services.clear()
+        
         if domain not in self.knowledge_services:
             try:
                 service = KnowledgeService(domain=domain)
@@ -91,7 +96,6 @@ class ChatService:
         if domain is None:
             domain = self.current_domain
         
-        # 確保結構存在
         if session_id not in self.chat_histories:
             self.chat_histories[session_id] = {}
         
@@ -109,7 +113,6 @@ class ChatService:
         history.append(f"使用者: {question}")
         history.append(f"助手: {answer}")
         
-        # 限制每個領域的歷史長度
         if len(history) > 20:
             self.chat_histories[session_id][domain] = history[-20:]
     
@@ -123,7 +126,6 @@ class ChatService:
                 if relevant_docs:
                     context = "\n\n".join([doc.page_content for doc in relevant_docs])
             
-            # 取得當前領域的歷史
             history = self.get_history(session_id, self.current_domain)
             history_text = "\n".join(history[-10:]) if history else "無"
             
@@ -135,7 +137,6 @@ class ChatService:
                 "question": question
             })
             
-            # 儲存到當前領域的歷史
             self.add_to_history(session_id, question, answer, self.current_domain)
             return answer
             
@@ -151,7 +152,7 @@ class ChatService:
                 return f"系統發生錯誤，請稍後再試。"
     
     def reset_conversation(self, session_id="default", domain=None):
-        """重置特定領域的對話（不指定則重置當前領域）"""
+        """重置特定領域的對話"""
         if domain is None:
             domain = self.current_domain
         
@@ -176,5 +177,5 @@ class ChatService:
         }
     
     def get_domain_history(self, session_id, domain):
-        """取得特定領域的對話歷史（供前端使用）"""
+        """取得特定領域的對話歷史"""
         return self.get_history(session_id, domain)

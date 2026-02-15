@@ -49,9 +49,11 @@
         border-radius: 15px;
         font-size: 0.85rem;
         font-weight: 600;
+        margin-top: 0.5rem;
     }
     .status.ok { background: #d4edda; color: #155724; }
     .status.warning { background: #fff3cd; color: #856404; }
+    .status.error { background: #f8d7da; color: #721c24; }
 </style>
 {% endblock %}
 
@@ -70,10 +72,10 @@
     </div>
     
     <div class="card">
-        <h3>📦 向量資料庫</h3>
-        <div class="metric" id="vectorSize">-</div>
-        <div class="label">資料庫大小 (KB)</div>
-        <span class="status ok" id="vectorStatus">正常</span>
+        <h3 id="vectorHeader">📦 向量資料庫</h3>
+        <div class="metric" id="vectorStatus">-</div>
+        <div class="label" id="vectorLabel">已初始化領域</div>
+        <div class="label" id="vectorSize" style="margin-top: 0.5rem;">-</div>
     </div>
     
     <div class="card">
@@ -108,14 +110,20 @@ async function updateMonitor() {
         document.getElementById('geminiLimit').textContent = `/ ${geminiLimit} 次 (${geminiPercent.toFixed(1)}%)`;
         
         // 向量庫
-        if (data.vectorstore.exists) {
-            document.getElementById('vectorSize').textContent = data.vectorstore.size_kb.toFixed(2);
-            document.getElementById('vectorStatus').textContent = '正常';
-            document.getElementById('vectorStatus').className = 'status ok';
+        const vectorData = data.vectorstore;
+        const statusText = `${vectorData.initialized_count}/${vectorData.total_count}`;
+        
+        document.getElementById('vectorStatus').textContent = statusText;
+        document.getElementById('vectorSize').textContent = `總大小：${vectorData.size_kb} KB`;
+        
+        // 更新向量庫標題顏色
+        const vectorHeader = document.getElementById('vectorHeader');
+        if (vectorData.initialized_count === vectorData.total_count) {
+            vectorHeader.style.color = '#27ae60';
+        } else if (vectorData.initialized_count > 0) {
+            vectorHeader.style.color = '#f39c12';
         } else {
-            document.getElementById('vectorSize').textContent = '未建立';
-            document.getElementById('vectorStatus').textContent = '尚未初始化';
-            document.getElementById('vectorStatus').className = 'status warning';
+            vectorHeader.style.color = '#e74c3c';
         }
         
         // 總用量
